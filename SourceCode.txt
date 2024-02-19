@@ -1,0 +1,291 @@
+There are a lot of Files for FrontEnd as well Backend. It's very difficult to put all the code.
+GitHub Link will be shared, Please have all the codes from there.
+
+I am putting only Few code of frontEnd/backEnd and everything will be on my gitHub account.
+
+FrontEnd Code:
+***AddBankAccount.jsx***
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
+
+const AddBankAccount = () => {
+  const location = useLocation();
+  const customer = location.state;
+
+  const bank_jwtToken = sessionStorage.getItem("bank-jwtToken");
+
+  const bank = JSON.parse(sessionStorage.getItem("active-bank"));
+
+  let navigate = useNavigate();
+
+  const [bankAccount, setBankAccount] = useState({
+    name: "",
+    ifscCode: "",
+    type: "",
+    bankId: bank.bank.id,
+    userId: customer.id,
+  });
+
+  const handleInput = (e) => {
+    setBankAccount({ ...bankAccount, [e.target.name]: e.target.value });
+  };
+
+  const saveAccount = (e) => {
+    fetch("http://localhost:8080/api/bank/account/add", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + bank_jwtToken,
+      },
+      body: JSON.stringify(bankAccount),
+    })
+      .then((result) => {
+        console.log("result", result);
+        result.json().then((res) => {
+          console.log(res);
+
+          if (res.success) {
+            console.log("Got the success response");
+
+            toast.success(res.responseMessage, {
+              position: "top-center",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+
+            setTimeout(() => {
+              navigate("/customer/bank/account/detail", { state: customer });
+            }, 1000); // Redirect after 3 seconds
+          } else {
+            console.log("Didn't got success response");
+            toast.error("It seems server is down", {
+              position: "top-center",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            setTimeout(() => {
+              window.location.reload(true);
+            }, 1000); // Redirect after 3 seconds
+          }
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error("It seems server is down", {
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 1000); // Redirect after 3 seconds
+      });
+    e.preventDefault();
+  };
+
+  return (
+    <div>
+      <div className="mt-2 d-flex aligns-items-center justify-content-center">
+        <div
+          className="card form-card border-color custom-bg"
+          style={{ width: "50rem" }}
+        >
+          <div className="card-header bg-color custom-bg-text text-center">
+            <h5 className="card-title">Add Bank</h5>
+          </div>
+          <div className="card-body text-color">
+            <form className="row g-3">
+              <div className="col-md-6 mb-3">
+                <label htmlFor="name" className="form-label">
+                  <b>Bank Name</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={bank.bank.name}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="code" className="form-label">
+                  <b>Bank Code</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={bank.bank.code}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="website" className="form-label">
+                  <b>Customer Name</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={customer.name}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="website" className="form-label">
+                  <b>Customer Email</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={customer.email}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="website" className="form-label">
+                  <b>Customer Contact</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={customer.contact}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="quantity" className="form-label">
+                  <b>Account Number</b>
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  id="number"
+                  name="number"
+                  onChange={handleInput}
+                  value={bankAccount.contact}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label htmlFor="quantity" className="form-label">
+                  <b>IFSC Code</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="ifscCode"
+                  name="ifscCode"
+                  onChange={handleInput}
+                  value={bankAccount.ifscCode}
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="role" class="form-label">
+                  <b>Account Type</b>
+                </label>
+                <select
+                  onChange={handleInput}
+                  className="form-control"
+                  name="type"
+                >
+                  <option value="0">Select Account Type</option>
+
+                  <option value="Saving"> Saving </option>
+                  <option value="Current"> Current </option>
+                </select>
+              </div>
+
+              <div className="d-flex aligns-items-center justify-content-center">
+                <button
+                  type="submit"
+                  className="btn bg-color custom-bg-text col-md-4"
+                  onClick={saveAccount}
+                >
+                  Add Account
+                </button>
+                <ToastContainer />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AddBankAccount;
+
+
+BackEnd Code:
+****OnlineBankingSystemApplication***
+package com.onlinebankingsystem;
+
+import java.util.HashSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.onlinebankingsystem.resource.BankAccountResource;
+
+@SpringBootApplication
+@EnableWebMvc
+public class OnlineBankingSystemApplication implements WebMvcConfigurer {
+	
+	private final Logger LOG = LoggerFactory.getLogger(BankAccountResource.class);
+	private static int ACCESS_CONTROL_MAX_AGE_IN_SECONDS = 12 * 60 * 60;
+	private static final HashSet<String> TRUSTED_SOURCES = new HashSet<String>();
+	static {
+		TRUSTED_SOURCES.add("http://localhost:3000");
+	}
+
+	// method to add trusted sources via application context
+	public static void setTrustedSources(final HashSet<String> sources) {
+		TRUSTED_SOURCES.addAll(sources);
+	}
+	public static void main(String[] args) {
+		SpringApplication.run(OnlineBankingSystemApplication.class, args);
+	}
+
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+
+		LOG.info(TRUSTED_SOURCES.toString());
+		
+		registry.addMapping("/**")
+				// .allowedOrigins(TRUSTED_SOURCES.toArray(new String[TRUSTED_SOURCES.size()]))
+				.allowedOrigins("http://localhost:3000").allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
+				.allowedHeaders("origin", "content-type", "accept", "authorization", "user-agent", "host",
+						"X-Forwarded-For", "X-Forwarded-Proto", "X-Forwarded-Port", "X-Redirected-Path",
+						"X-Redirected-Params", "X-TraceId", "X-Feature-Flags", "X-Partner-Id")
+				.exposedHeaders("Content-Length", "Content-Type", "Content-Disposition", "Cache-Control")
+				.allowCredentials(true).maxAge(ACCESS_CONTROL_MAX_AGE_IN_SECONDS);
+
+	}
+
+}
